@@ -139,8 +139,8 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    host = os.getenv('HOST', '0.0.0.0')
-    port = int(os.getenv('PORT', '5000'))
+    host = '0.0.0.0'
+    port = int(os.environ.get('PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', '1') == '1'
 
     # Camera APIs may be blocked on plain HTTP for non-localhost origins.
@@ -153,7 +153,8 @@ if __name__ == '__main__':
         open_port = int(os.getenv('HTTPS_PORT', '5443')) if use_https else port
         url = f'{scheme}://localhost:{open_port}'
         print(f'\n  * Opening browser at {url}')
-        webbrowser.open(url)
+        if os.getenv('RAILWAY_ENVIRONMENT') is None:
+            webbrowser.open(url)
 
     if not debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
         # Delay slightly so the server is ready before the browser opens
@@ -164,10 +165,15 @@ if __name__ == '__main__':
         socketio.run(
             app,
             debug=debug,
-            host=host,
+            host='0.0.0.0',
             port=ssl_port,
             ssl_context='adhoc',
             allow_unsafe_werkzeug=True,
         )
     else:
-        socketio.run(app, debug=debug, host=host, port=port, allow_unsafe_werkzeug=True)
+        socketio.run(
+            app,
+            host='0.0.0.0',
+            port=int(os.environ.get('PORT', 5000)),
+            allow_unsafe_werkzeug=True,
+        )
