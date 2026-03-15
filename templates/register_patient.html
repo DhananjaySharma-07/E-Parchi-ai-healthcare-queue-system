@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration - E-Parchi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-arrow-left me-3 text-primary-custom fs-5"></i>
+                <span class="fw-bold">Back to Dashboard</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="bg-primary-custom text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <i class="fas fa-user-plus fa-3x text-secondary-custom mb-3"></i>
+                    <h1 class="display-6 fw-bold mb-2">Patient Registration</h1>
+                    <p class="mb-0">Complete your information to get your queue token</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step Indicator -->
+    <div class="container py-4">
+        <div class="step-indicator mb-5">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+            <div class="step" id="step4">4</div>
+        </div>
+
+        <!-- Multi-Step Form -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form id="registrationForm" method="POST">
+                    <!-- Step 1: Hospital Information -->
+                    <div class="step-content" id="step1-content">
+                        <div class="card shadow-custom-lg border-0">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-hospital fa-3x text-primary-custom mb-3"></i>
+                                    <h3 class="fw-bold">Hospital Information</h3>
+                                    <p class="text-muted">Confirm your hospital details</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Hospital Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                        <input type="text" id="hospital_name" class="form-control form-control-lg" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Hospital Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                        <input type="text" id="hospital_address" class="form-control form-control-lg" readonly>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-primary btn-lg w-100" onclick="nextStep(1)">
+                                    <i class="fas fa-arrow-right me-2"></i>Continue to Personal Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Personal Information -->
+                    <div class="step-content d-none" id="step2-content">
+                        <div class="card shadow-custom-lg border-0">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-user fa-3x text-primary-custom mb-3"></i>
+                                    <h3 class="fw-bold">Personal Information</h3>
+                                    <p class="text-muted">Tell us about yourself</p>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">Full Name *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" name="name" class="form-control form-control-lg" placeholder="Enter your full name" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Phone Number *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                            <input type="tel" name="phone" class="form-control form-control-lg" placeholder="+91 XXXXX XXXXX" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Age *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-birthday-cake"></i></span>
+                                            <input type="number" name="age" class="form-control form-control-lg" placeholder="Your age" min="1" max="120" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">Gender *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-venus-mars"></i></span>
+                                            <select name="gender" class="form-select form-select-lg" required>
+                                                <option value="">Select gender</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Other">Other</option>
+                                                <option value="Prefer not to say">Prefer not to say</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-3 mt-4">
+                                    <button type="button" class="btn btn-outline-secondary btn-lg flex-fill" onclick="prevStep(2)">
+                                        <i class="fas fa-arrow-left me-2"></i>Back
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-lg flex-fill" onclick="nextStep(2)">
+                                        <i class="fas fa-arrow-right me-2"></i>Continue
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Symptoms & Department Selection -->
+                    <div class="step-content d-none" id="step3-content">
+                        <div class="card shadow-custom-lg border-0">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-stethoscope fa-3x text-primary-custom mb-3"></i>
+                                    <h3 class="fw-bold">Health Information</h3>
+                                    <p class="text-muted">Help us understand your healthcare needs</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Describe your symptoms or reason for visit</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-comment-medical"></i></span>
+                                        <textarea name="symptoms" id="symptoms_input" class="form-control form-control-lg" rows="3" placeholder="e.g., I have a headache and fever, or I need a routine checkup" maxlength="500"></textarea>
+                                    </div>
+                                    <div class="form-text">Maximum 500 characters</div>
+                                </div>
+
+                                <div class="alert alert-light border mb-4" id="triage-preview">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold mb-0"><i class="fas fa-brain me-2 text-primary-custom"></i>AI Triage Preview</h6>
+                                        <span class="badge bg-secondary" id="triage-priority">NORMAL</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-sm-4"><small class="text-muted d-block">Severity</small><strong id="triage-score">10</strong></div>
+                                        <div class="col-sm-8"><small class="text-muted d-block">Recommendation</small><strong id="triage-note">Describe symptoms to get a smart queue recommendation.</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Select Department *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-clinic-medical"></i></span>
+                                        <select name="department_id" id="department_select" class="form-select form-select-lg" required>
+                                            <option value="">Choose a department</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-lg flex-fill" onclick="prevStep(3)">
+                                        <i class="fas fa-arrow-left me-2"></i>Back
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-lg flex-fill" onclick="nextStep(3)">
+                                        <i class="fas fa-arrow-right me-2"></i>Continue
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Doctor Selection & Confirmation -->
+                    <div class="step-content d-none" id="step4-content">
+                        <div class="card shadow-custom-lg border-0">
+                            <div class="card-body p-5">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-user-md fa-3x text-primary-custom mb-3"></i>
+                                    <h3 class="fw-bold">Select Doctor</h3>
+                                    <p class="text-muted">Choose your preferred doctor</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Available Doctors</label>
+                                    <div id="doctors_list" class="row g-3">
+                                        <!-- Doctors will be loaded here -->
+                                    </div>
+                                    <input type="hidden" name="doctor_id" id="selected_doctor_id" required>
+                                </div>
+
+                                <!-- Registration Summary -->
+                                <div class="bg-light rounded p-4 mb-4">
+                                    <h5 class="fw-bold mb-3">Registration Summary</h5>
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <div class="text-muted small">Hospital</div>
+                                            <div class="fw-bold" id="summary-hospital">-</div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="text-muted small">Department</div>
+                                            <div class="fw-bold" id="summary-department">-</div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="text-muted small">Doctor</div>
+                                            <div class="fw-bold" id="summary-doctor">-</div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="text-muted small">Estimated Wait</div>
+                                            <div class="fw-bold text-primary-custom" id="summary-wait">-</div>
+                                        </div>
+                                    <div class="col-sm-6">
+                                        <div class="text-muted small">AI Priority</div>
+                                        <div class="fw-bold" id="summary-priority">NORMAL</div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="text-muted small">Severity Score</div>
+                                        <div class="fw-bold" id="summary-severity">10</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-3 mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-lg flex-fill" onclick="prevStep(4)">
+                                    <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg flex-fill">
+                                    <i class="fas fa-check me-2"></i>Get My Token
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let hospitalData = null;
+        let departments = [];
+        let doctors = [];
+        let triageState = { severity_score: 10, priority_level: 'NORMAL', triage_note: 'Describe symptoms to get a smart queue recommendation.', emergency_flag: false };
+
+        // Get hospital ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hospitalId = urlParams.get('hospital_id');
+
+        // Step navigation
+        function nextStep(step) {
+            if (validateStep(step)) {
+                document.getElementById(`step${step}-content`).classList.add('d-none');
+                document.getElementById(`step${step + 1}-content`).classList.remove('d-none');
+                updateStepIndicator(step + 1);
+                currentStep = step + 1;
+
+                if (step + 1 === 2) loadHospitalInfo();
+                if (step + 1 === 3) loadDepartments();
+                if (step + 1 === 4) loadDoctors();
+            }
+        }
+
+        function prevStep(step) {
+            document.getElementById(`step${step}-content`).classList.add('d-none');
+            document.getElementById(`step${step - 1}-content`).classList.remove('d-none');
+            updateStepIndicator(step - 1);
+            currentStep = step - 1;
+        }
+
+        function updateStepIndicator(activeStep) {
+            for (let i = 1; i <= 4; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'completed');
+                if (i < activeStep) {
+                    stepEl.classList.add('completed');
+                } else if (i === activeStep) {
+                    stepEl.classList.add('active');
+                }
+            }
+        }
+
+        function validateStep(step) {
+            if (step === 2) {
+                const name = document.querySelector('input[name="name"]').value.trim();
+                const phone = document.querySelector('input[name="phone"]').value.trim();
+                const age = document.querySelector('input[name="age"]').value;
+                const gender = document.querySelector('select[name="gender"]').value;
+
+                if (!name || !phone || !age || !gender) {
+                    alert('Please fill in all required fields.');
+                    return false;
+                }
+            }
+            if (step === 3) {
+                const department = document.querySelector('select[name="department_id"]').value;
+                if (!department) {
+                    alert('Please select a department.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Load hospital information
+        async function loadHospitalInfo() {
+            if (!hospitalId) return;
+
+            try {
+                const response = await fetch(`/api/hospital/${hospitalId}`);
+                const data = await response.json();
+
+                document.getElementById('hospital_name').value = data.name;
+                document.getElementById('hospital_address').value = data.address;
+                document.getElementById('summary-hospital').textContent = data.name;
+
+                hospitalData = data;
+            } catch (error) {
+                console.error('Error loading hospital info:', error);
+            }
+        }
+
+        // Load departments
+        async function loadDepartments() {
+            try {
+                const response = await fetch(`/api/departments?hospital_id=${hospitalId}`);
+                departments = await response.json();
+
+                const select = document.getElementById('department_select');
+                select.innerHTML = '<option value="">Choose a department</option>';
+
+                departments.forEach(dept => {
+                    select.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading departments:', error);
+            }
+        }
+
+        // Load doctors when department is selected
+        document.getElementById('department_select').addEventListener('change', function() {
+            const departmentId = this.value;
+            if (departmentId) {
+                loadDoctors(departmentId);
+            }
+        });
+
+        // Load doctors for selected department
+        async function loadDoctors(departmentId) {
+            if (!departmentId) {
+                departmentId = document.getElementById('department_select').value;
+            }
+
+            try {
+                const response = await fetch(`/api/doctors?department_id=${departmentId}&hospital_id=${hospitalId}`);
+                doctors = await response.json();
+
+                const container = document.getElementById('doctors_list');
+                container.innerHTML = '';
+
+                if (doctors.length === 0) {
+                    container.innerHTML = '<div class="col-12"><div class="alert alert-info">No doctors available in this department.</div></div>';
+                    return;
+                }
+
+                doctors.forEach(doctor => {
+                    const doctorCard = `
+                        <div class="col-md-6">
+                            <div class="card doctor-card border ${doctor.id === parseInt(document.getElementById('selected_doctor_id').value || '0') ? 'border-primary' : ''}" data-doctor-id="${doctor.id}" data-doctor-name="${doctor.name}" data-predicted-wait="${doctor.predicted_wait || 0}" onclick="selectDoctor(this, ${doctor.id}, '${doctor.name.replace(/'/g, "\\'")}')">
+                                <div class="card-body text-center p-3">
+                                    <div class="bg-primary-custom rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user-md text-white"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-1">Dr. ${doctor.name}</h6>
+                                    <p class="text-muted small mb-2">${doctor.specialization || 'General Physician'}</p>
+                                    <div class="small text-muted mb-2">Predicted wait: ${doctor.predicted_wait || 0} min</div>
+                                    ${doctor.emergency_waiting_count ? `<div class="badge bg-danger">${doctor.emergency_waiting_count} emergency ahead</div>` : '<div class="badge bg-success">Available</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += doctorCard;
+                });
+
+                if (doctors.length > 0) {
+                    const firstCard = container.querySelector('.doctor-card');
+                    if (firstCard) {
+                        selectDoctor(firstCard, doctors[0].id, doctors[0].name);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+            }
+        }
+
+        function selectDoctor(card, doctorId, doctorName) {
+            document.getElementById('selected_doctor_id').value = doctorId;
+
+            document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('border-primary'));
+            if (card) {
+                card.classList.add('border-primary');
+            }
+
+            document.getElementById('summary-doctor').textContent = `Dr. ${doctorName}`;
+
+            const deptSelect = document.getElementById('department_select');
+            const selectedDept = departments.find(d => d.id == deptSelect.value);
+            if (selectedDept) {
+                document.getElementById('summary-department').textContent = selectedDept.name;
+            }
+
+            const predictedWait = card ? Number(card.dataset.predictedWait || 0) : 0;
+            const smartWait = triageState.emergency_flag ? 'Immediate attention' : `${predictedWait + Math.round(triageState.severity_score / 10)} min`;
+            document.getElementById('summary-wait').textContent = smartWait;
+            document.getElementById('summary-priority').textContent = triageState.priority_level;
+            document.getElementById('summary-severity').textContent = triageState.severity_score;
+        }
+
+        async function refreshTriagePreview() {
+            const age = document.querySelector('input[name="age"]').value || 0;
+            const symptoms = document.getElementById('symptoms_input').value || '';
+
+            try {
+                const response = await fetch('/api/triage_assessment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ age, symptoms })
+                });
+                triageState = await response.json();
+                document.getElementById('triage-priority').textContent = triageState.priority_level;
+                document.getElementById('triage-priority').className = `badge ${triageState.emergency_flag ? 'bg-danger' : triageState.priority_level === 'PRIORITY' ? 'bg-warning text-dark' : 'bg-secondary'}`;
+                document.getElementById('triage-score').textContent = triageState.severity_score;
+                document.getElementById('triage-note').textContent = triageState.triage_note;
+                document.getElementById('summary-priority').textContent = triageState.priority_level;
+                document.getElementById('summary-severity').textContent = triageState.severity_score;
+                const selectedCard = document.querySelector('.doctor-card.border-primary');
+                if (selectedCard) {
+                    selectDoctor(selectedCard, Number(selectedCard.dataset.doctorId), selectedCard.dataset.doctorName);
+                }
+            } catch (error) {
+                console.error('Error loading triage preview:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!hospitalId) {
+                alert('Hospital ID is required. Please scan a valid QR code.');
+                window.location.href = '/scan_qr';
+                return;
+            }
+
+            loadHospitalInfo();
+            document.querySelector('input[name="age"]').addEventListener('input', refreshTriagePreview);
+            document.getElementById('symptoms_input').addEventListener('input', refreshTriagePreview);
+            refreshTriagePreview();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Parchi - Smart Healthcare Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <div class="bg-primary-custom rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                    <i class="fas fa-hospital-alt text-white"></i>
+                </div>
+                <span class="fw-bold fs-4">E-Parchi</span>
+            </a>
+            <div class="d-flex align-items-center ms-auto">
+                <span class="text-muted me-3 d-none d-md-block">Welcome back!</span>
+                <div class="bg-secondary-custom rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-primary-custom text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Your Health Journey Starts Here</h1>
+                    <p class="lead mb-4">Experience seamless healthcare with smart queue management, AI assistance, and digital records.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button class="btn btn-light btn-lg px-4" onclick="window.location.href='/scan_qr'">
+                            <i class="fas fa-qrcode me-2"></i>Start Visit
+                        </button>
+                        <button class="btn btn-outline-light btn-lg px-4" onclick="window.location.href='/assistant'">
+                            <i class="fas fa-robot me-2"></i>AI Assistant
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <a class="btn btn-outline-light btn-lg" href="/tokens"><i class="fas fa-ticket-alt me-2"></i>View My Tokens</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center d-none d-lg-block">
+                    <i class="fas fa-heartbeat fa-6x text-secondary-custom opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container mt-4">
+        <div class="card border-0 shadow-sm p-4 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="fw-bold">Your Current Queue Status</h4>
+                    <p class="text-muted mb-0">Get real-time updates for your active token.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a class="btn btn-primary" href="/tokens"><i class="fas fa-ticket-alt me-2"></i>Open My Tokens</a>
+                </div>
+            </div>
+            <div id="token-status" class="mt-3">Loading token status...</div>
+        </div>
+    </section>
+
+    <!-- Dashboard Grid -->
+    <div class="container py-5">
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold text-center mb-4">Healthcare Services</h2>
+                <p class="text-muted text-center mb-5">Choose from our comprehensive healthcare solutions</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Scan QR Card -->
+            <div class="dashboard-card" onclick="window.location.href='/scan_qr'">
+                <i class="fas fa-qrcode"></i>
+                <h5>Scan Hospital QR</h5>
+                <p>Start your hospital visit by scanning the QR code at the reception</p>
+            </div>
+
+            <!-- AI Assistant Card -->
+            <div class="dashboard-card" onclick="window.location.href='/assistant'">
+                <i class="fas fa-robot"></i>
+                <h5>AI Health Assistant</h5>
+                <p>Get instant guidance on symptoms, departments, and healthcare navigation</p>
+            </div>
+
+            <!-- My Tokens Card -->
+            <div class="dashboard-card" onclick="window.location.href='/tokens'">
+                <i class="fas fa-ticket-alt"></i>
+                <h5>My Tokens</h5>
+                <p>View and track all your queue tokens and current status</p>
+            </div>
+
+            <!-- Medical Records Card -->
+            <div class="dashboard-card" onclick="window.location.href='/records'">
+                <i class="fas fa-file-medical"></i>
+                <h5>Medical Records</h5>
+                <p>Access your complete medical history and consultation records</p>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="dashboard-card" onclick="window.location.href='/profile'">
+                <i class="fas fa-user-circle"></i>
+                <h5>My Profile</h5>
+                <p>Manage your personal information and healthcare preferences</p>
+            </div>
+
+            <!-- Emergency Card -->
+            <div class="dashboard-card" onclick="emergencyCall()">
+                <i class="fas fa-ambulance"></i>
+                <h5>Emergency</h5>
+                <p>Quick access to emergency services and urgent care information</p>
+            </div>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="fw-bold text-center mb-4">Today's Overview</h3>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-custom">
+                    <div class="card-body py-4">
+                        <div class="bg-primary-custom rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-clock text-white fa-lg"></i>
+                        </div>
+                        <h4 class="fw-bold text-primary-custom mb-1">--</h4>
+                        <p class="text-muted mb-0">Active Tokens</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-custom">
+                    <div class="card-body py-4">
+                        <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-check-circle text-white fa-lg"></i>
+                        </div>
+                        <h4 class="fw-bold text-success mb-1">--</h4>
+                        <p class="text-muted mb-0">Completed Today</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-custom">
+                    <div class="card-body py-4">
+                        <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-hourglass-half text-white fa-lg"></i>
+                        </div>
+                        <h4 class="fw-bold text-warning mb-1">-- min</h4>
+                        <p class="text-muted mb-0">Avg. Wait Time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-4 mt-5">
+        <div class="container text-center">
+            <p class="text-muted mb-0">© 2024 E-Parchi. Smart Healthcare Platform. Made with <i class="fas fa-heart text-danger"></i> for better healthcare.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Emergency call function
+        function emergencyCall() {
+            if (confirm('Do you need emergency medical assistance? This will connect you to emergency services.')) {
+                alert('Emergency services contacted. Help is on the way.');
+            }
+        }
+
+        async function loadTokenStatus() {
+            const tokenIdValue = '{{ token_id or "" }}';
+            const tokenId = tokenIdValue ? Number(tokenIdValue) : null;
+            const statusEl = document.getElementById('token-status');
+            if (!tokenId) {
+                statusEl.innerHTML = '<div class="alert alert-secondary">No active token found yet. Scan hospital QR to register and get a token.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/queue_status?token_id=${tokenId}`);
+                const data = await res.json();
+                if (data.error) {
+                    statusEl.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    return;
+                }
+                statusEl.innerHTML = `
+                    <div class="row text-center g-2">
+                        <div class="col-md-3"><div class="p-3 bg-light rounded"><strong>Your Token</strong><div>${data.your_token}</div></div></div>
+                        <div class="col-md-3"><div class="p-3 bg-light rounded"><strong>Now Serving</strong><div>${data.current_token}</div></div></div>
+                        <div class="col-md-3"><div class="p-3 bg-light rounded"><strong>Ahead</strong><div>${data.patients_ahead}</div></div></div>
+                        <div class="col-md-3"><div class="p-3 bg-light rounded"><strong>Est Wait</strong><div>${Math.ceil(data.est_wait_time)} min</div></div></div>
+                    </div>
+                `;
+            } catch (err) {
+                statusEl.innerHTML = '<div class="alert alert-warning">Unable to fetch token status. Please try again.</div>';
+                console.error(err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTokenStatus();
+
+            const cards = document.querySelectorAll('.dashboard-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

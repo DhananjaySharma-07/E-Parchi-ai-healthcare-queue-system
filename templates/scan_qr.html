@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan QR Code - E-Parchi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-arrow-left me-3 text-primary-custom fs-5"></i>
+                <span class="fw-bold">Back to Dashboard</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-primary text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <i class="fas fa-qrcode fa-4x text-secondary-custom mb-3"></i>
+                    <h1 class="display-5 fw-bold mb-2">Scan Hospital QR Code</h1>
+                    <p class="lead mb-0">Start your healthcare journey by scanning the QR code at the hospital reception</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scanner Section -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Instructions Card -->
+                <div class="card shadow-custom-lg mb-4 border-0">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="fw-bold text-primary-custom mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>How to Scan
+                                </h4>
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Allow camera access when prompted
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Position the QR code within the scanning frame
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Hold steady until the scan completes automatically
+                                    </li>
+                                    <li class="mb-0">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        You'll be redirected to patient registration
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-mobile-alt fa-2x text-primary-custom"></i>
+                                </div>
+                                <p class="text-muted small mb-0">Use your smartphone camera for best results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scanner Card -->
+                <div class="card shadow-custom-lg border-0">
+                    <div class="card-body p-4 text-center">
+                        <!-- Camera Status -->
+                        <div id="camera-status" class="mb-4">
+                            <div class="bg-light rounded-pill px-4 py-2 d-inline-block">
+                                <i class="fas fa-camera text-muted me-2"></i>
+                                <span class="text-muted">Tap Start Camera to begin scanning</span>
+                            </div>
+                        </div>
+
+                        <div id="camera-debug" class="small text-muted mb-3 d-none"></div>
+                        <div id="permission-status" class="small mb-3">
+                            <span class="badge bg-secondary">Permission: unknown</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <button id="startCameraBtn" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-video me-2"></i>Start Camera
+                            </button>
+                        </div>
+
+                        <!-- Scanner Container -->
+                        <div class="scanner-container mb-4 position-relative">
+                            <video id="video" class="scanner-video" autoplay playsinline muted></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame"></div>
+                            </div>
+
+                            <!-- Scanning Animation Overlay -->
+                            <div id="scanning-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(47, 128, 237, 0.1);">
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <div class="text-center">
+                                        <div class="loading-spinner mb-3"></div>
+                                        <p class="text-primary-custom fw-bold mb-0">Scanning QR Code...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Camera retry button (shown only when camera fails) -->
+                        <div class="mb-3">
+                            <button id="scanBtn" class="btn btn-primary btn-lg px-5 d-none">
+                                <i class="fas fa-redo me-2"></i>Retry Camera
+                            </button>
+                        </div>
+
+                        <!-- Status Messages -->
+                        <div id="status-messages">
+                            <div id="success-message" class="success-message d-none">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span>QR Code detected! Redirecting to registration...</span>
+                            </div>
+
+                            <div id="error-message" class="error-message d-none">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="error-text">Unable to access camera. Please check permissions.</span>
+                            </div>
+
+                            <div id="info-message" class="alert alert-info d-none">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span id="info-text">Position the QR code within the frame</span>
+                            </div>
+                        </div>
+
+                        <div id="no-camera-panel" class="alert alert-warning d-none mt-3 text-start">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-camera-slash me-2 mt-1"></i>
+                                <div>
+                                    <div class="fw-bold mb-1">Continue without camera</div>
+                                    <div class="small mb-2">Use one of these options instead:</div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button id="jumpManualBtn" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-keyboard me-1"></i>Manual Hospital ID
+                                        </button>
+                                        <button id="uploadFallbackBtn" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-image me-1"></i>Upload QR Image
+                                        </button>
+                                        <button id="openSecureBtn" class="btn btn-sm btn-warning d-none">
+                                            <i class="fas fa-lock me-1"></i>Open Secure Scanner
+                                        </button>
+                                        <button id="openLocalhostBtn" class="btn btn-sm btn-warning d-none">
+                                            <i class="fas fa-globe me-1"></i>Open on localhost
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alternative Options -->
+                        <div id="fallback-options" class="mt-4 pt-4 border-top">
+                            <p class="text-muted mb-3">Having trouble scanning?</p>
+                            <div class="row g-3 justify-content-center mb-3">
+                                <div class="col-md-8">
+                                    <label for="qrImageInput" class="form-label fw-semibold">Upload QR image</label>
+                                    <input id="qrImageInput" type="file" class="form-control" accept="image/*">
+                                    <div class="form-text">Take a photo of the hospital QR and upload it here.</div>
+                                </div>
+                            </div>
+                            <div class="row g-2 justify-content-center mb-3">
+                                <div class="col-md-4 col-8">
+                                    <input id="manualHospitalId" type="number" min="1" class="form-control" placeholder="Enter Hospital ID">
+                                </div>
+                                <div class="col-md-auto col-4">
+                                    <button id="manualGoBtn" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-arrow-right me-2"></i>Continue
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap justify-content-center gap-3">
+                                <button class="btn btn-outline-primary" onclick="refreshCamera()">
+                                    <i class="fas fa-refresh me-2"></i>Refresh Camera
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="window.location.href='/'">
+                                    <i class="fas fa-home me-2"></i>Back to Dashboard
+                                </button>
+                                <button class="btn btn-success" onclick="window.location.href='/register_patient?hospital_id=1'">
+                                    <i class="fas fa-hospital me-2"></i>Sample Hospital (ID 1)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Section -->
+                <div class="card shadow-custom mt-4 border-0">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-primary-custom mb-3">
+                            <i class="fas fa-question-circle me-2"></i>Need Help?
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-lightbulb text-warning me-3 mt-1"></i>
+                                    <div>
+                                        <h6 class="mb-1">Good Lighting</h6>
+                                        <p class="text-muted small mb-0">Ensure the QR code is well-lit and clearly visible</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-mobile-alt text-info me-3 mt-1"></i>
+                                    <div>
+                                        <h6 class="mb-1">Stable Position</h6>
+                                        <p class="text-muted small mb-0">Hold your device steady while scanning</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let scanning = false;
+        let activeStream = null;
+        let fileReaderBusy = false;
+        let lastCameraError = null;
+        let cameraPermissionStatus = null;
+
+        // ── Status helpers ────────────────────────────────────────────────────
+        function setCameraStatus(type, text) {
+            const icons = { loading: 'fa-spinner fa-spin', ok: 'fa-circle text-success', error: 'fa-times-circle text-danger' };
+            const icon = icons[type] || 'fa-camera text-muted';
+            document.getElementById('camera-status').innerHTML =
+                `<div class="bg-light rounded-pill px-4 py-2 d-inline-block">
+                    <i class="fas ${icon} me-2"></i>
+                    <span class="text-muted">${text}</span>
+                </div>`;
+        }
+
+        function updateStatus(type, message) {
+            document.getElementById('success-message').classList.add('d-none');
+            document.getElementById('error-message').classList.add('d-none');
+            document.getElementById('info-message').classList.add('d-none');
+
+            if (type === 'success') {
+                const el = document.getElementById('success-message');
+                el.classList.remove('d-none');
+                el.querySelector('span').textContent = message;
+            } else if (type === 'error') {
+                document.getElementById('error-message').classList.remove('d-none');
+                document.getElementById('error-text').textContent = message;
+            } else if (type === 'info') {
+                document.getElementById('info-message').classList.remove('d-none');
+                document.getElementById('info-text').textContent = message;
+            }
+        }
+
+        function updateDebugInfo(extra) {
+            const debug = document.getElementById('camera-debug');
+            const host = window.location.hostname;
+            const protocol = window.location.protocol;
+            const secure = window.isSecureContext ? 'secure' : 'not-secure';
+            const embed = (window.self !== window.top) ? 'embedded-view' : 'normal-tab';
+            const errPart = lastCameraError ? ` | error=${lastCameraError.name || 'Unknown'}${lastCameraError.message ? ` (${lastCameraError.message})` : ''}` : '';
+            const extraPart = extra ? ` | ${extra}` : '';
+            debug.textContent = `origin=${protocol}//${host} | context=${secure} | view=${embed}${errPart}${extraPart}`;
+            debug.classList.remove('d-none');
+        }
+
+        function getRuntimeInfo() {
+            const ua = navigator.userAgent || '';
+            const ref = document.referrer || '';
+            const protocol = window.location.protocol || '';
+            const isEmbeddedView = window.self !== window.top;
+            const looksLikeVSCode =
+                protocol.includes('vscode') ||
+                ref.includes('vscode') ||
+                ua.includes('Electron') ||
+                ua.includes('VSCode');
+            const isChromeFamily = /Chrome|Chromium|Edg\//.test(ua);
+
+            return {
+                isEmbeddedView,
+                looksLikeVSCode,
+                isChromeFamily
+            };
+        }
+
+        function showUnsupportedEnvironmentMessage() {
+            const runtime = getRuntimeInfo();
+            if (runtime.looksLikeVSCode || runtime.isEmbeddedView) {
+                setCameraStatus('error', 'Unsupported preview environment');
+                updateStatus('error', 'Camera may be blocked in VS Code preview/webview. Open this app in Google Chrome using http://localhost:5000/scan_qr and tap "Start Camera".');
+                showNoCameraFallback();
+                return true;
+            }
+            return false;
+        }
+
+        function setPermissionBadge(state, detail) {
+            const container = document.getElementById('permission-status');
+            let badgeClass = 'bg-secondary';
+            let text = 'Permission: unknown';
+
+            if (state === 'granted') {
+                badgeClass = 'bg-success';
+                text = 'Permission: granted';
+            } else if (state === 'prompt') {
+                badgeClass = 'bg-warning text-dark';
+                text = 'Permission: prompt';
+            } else if (state === 'denied') {
+                badgeClass = 'bg-danger';
+                text = 'Permission: denied';
+            } else if (state === 'unsupported') {
+                badgeClass = 'bg-info text-dark';
+                text = 'Permission API: unsupported';
+            }
+
+            if (detail) {
+                text += ` (${detail})`;
+            }
+
+            container.innerHTML = `<span class="badge ${badgeClass}">${text}</span>`;
+        }
+
+        async function syncPermissionBadge() {
+            try {
+                if (!navigator.permissions || !navigator.permissions.query) {
+                    setPermissionBadge('unsupported');
+                    return null;
+                }
+
+                const status = await navigator.permissions.query({ name: 'camera' });
+                cameraPermissionStatus = status;
+                setPermissionBadge(status.state);
+
+                status.onchange = () => {
+                    setPermissionBadge(status.state, 'updated');
+                    updateDebugInfo(`permissions=camera:${status.state}`);
+                };
+
+                return status;
+            } catch (err) {
+                setPermissionBadge('unsupported');
+                return null;
+            }
+        }
+
+        function getSecureScannerUrl() {
+            const host = window.location.hostname || 'localhost';
+            return `https://${host}:5443/scan_qr`;
+        }
+
+        function showSecureOpenButton(show) {
+            const btn = document.getElementById('openSecureBtn');
+            btn.classList.toggle('d-none', !show);
+        }
+
+        function showLocalhostOpenButton(show) {
+            const btn = document.getElementById('openLocalhostBtn');
+            btn.classList.toggle('d-none', !show);
+        }
+
+        function getLocalhostScannerUrl() {
+            const protocol = window.location.protocol || 'http:';
+            const port = window.location.port ? `:${window.location.port}` : '';
+            return `${protocol}//localhost${port}/scan_qr`;
+        }
+
+        function refreshCamera() {
+            // Stop any existing stream before restarting
+            if (activeStream) {
+                activeStream.getTracks().forEach(t => t.stop());
+                activeStream = null;
+            }
+            scanning = false;
+            video.srcObject = null;
+            initCamera();
+        }
+
+        function showNoCameraFallback() {
+            const panel = document.getElementById('no-camera-panel');
+            panel.classList.remove('d-none');
+            document.getElementById('fallback-options').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function analyzePermissionIssue(err) {
+            const isSecure = window.isSecureContext;
+            const inIframe = window.self !== window.top;
+            const isLoopbackIp = window.location.hostname === '127.0.0.1';
+
+            if (!isSecure) {
+                showSecureOpenButton(true);
+                return 'Camera is blocked on non-secure origin. Open the secure scanner (HTTPS) and try again.';
+            }
+
+            if (inIframe) {
+                return 'Camera may be blocked inside embedded preview. Open this page in a normal browser tab and try again.';
+            }
+
+            if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+                if (isLoopbackIp) {
+                    showLocalhostOpenButton(true);
+                    return 'Permission is denied for 127.0.0.1 in Chrome. Open on localhost and allow camera there.';
+                }
+                return 'Camera permission is denied at browser/OS level. Allow camera in site settings, then retry.';
+            }
+
+            return null;
+        }
+
+        function parseHospitalId(rawData) {
+            let hospitalId = null;
+            const normalized = String(rawData || '').trim();
+
+            if (normalized.toLowerCase().includes('hospital_id=')) {
+                const match = normalized.match(/hospital_id=(\d+)/i);
+                if (match) hospitalId = match[1];
+            } else if (normalized.toUpperCase().includes('HOSPITAL_ID:')) {
+                const match = normalized.match(/HOSPITAL_ID\s*:\s*(\d+)/i);
+                if (match) hospitalId = match[1];
+            } else {
+                const match = normalized.match(/^(\d+)$/);
+                if (match) hospitalId = match[1];
+            }
+
+            return hospitalId;
+        }
+
+        async function goToRegistration(hospitalId) {
+            try {
+                const response = await fetch(`/process_qr?hospital_id=${hospitalId}`);
+                const data = await response.json();
+                if (data && data.success) {
+                    window.location.href = `/register_patient?hospital_id=${hospitalId}`;
+                    return;
+                }
+                updateStatus('error', 'Hospital not found. Please verify the Hospital ID.');
+            } catch (err) {
+                console.error('Hospital lookup failed:', err);
+                updateStatus('error', 'Could not verify hospital right now. Please try again.');
+            }
+        }
+
+        // ── Camera init ───────────────────────────────────────────────────────
+        async function initCamera() {
+            setCameraStatus('loading', 'Requesting camera permission...');
+            updateStatus('info', 'Requesting camera permission...');
+            document.getElementById('scanBtn').classList.add('d-none');
+            document.getElementById('startCameraBtn').classList.add('d-none');
+            showSecureOpenButton(false);
+            showLocalhostOpenButton(false);
+            updateDebugInfo();
+            await syncPermissionBadge();
+
+            if (showUnsupportedEnvironmentMessage()) {
+                document.getElementById('scanBtn').classList.remove('d-none');
+                document.getElementById('startCameraBtn').classList.remove('d-none');
+                return;
+            }
+
+            // Guard: getUserMedia is only available on HTTPS or localhost
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setCameraStatus('error', 'Camera not supported');
+                updateStatus('error',
+                    'Camera access requires HTTPS or localhost. ' +
+                    'Use the "Sample Hospital" button below or ask staff for manual entry.');
+                document.getElementById('scanBtn').classList.remove('d-none');
+                document.getElementById('startCameraBtn').classList.remove('d-none');
+                showSecureOpenButton(!window.isSecureContext);
+                updateDebugInfo('mediaDevices unavailable');
+                showNoCameraFallback();
+                return;
+            }
+
+            if (cameraPermissionStatus) {
+                updateDebugInfo(`permissions=camera:${cameraPermissionStatus.state}`);
+                if (cameraPermissionStatus.state === 'denied') {
+                    // Keep going with getUserMedia request from user click for clearer browser-level errors.
+                    showNoCameraFallback();
+                    updateStatus('info', 'Camera permission is currently denied. Trying request again...');
+                    if (window.location.hostname === '127.0.0.1') {
+                        showLocalhostOpenButton(true);
+                    }
+                }
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        // Use 'ideal' so desktop (front-only) cameras still work
+                        facingMode: { ideal: 'environment' },
+                        width:  { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                activeStream = stream;
+                video.srcObject = stream;
+                video.setAttribute('playsinline', 'true'); // Required for iOS
+
+                // Use addEventListener to avoid missing an event that fires before
+                // the assignment when using video.onloadedmetadata = ...
+                video.addEventListener('loadedmetadata', async () => {
+                    try {
+                        await video.play();
+                        setCameraStatus('ok', 'Camera started successfully');
+                        updateStatus('success', 'Camera started successfully. Position the QR code within the frame.');
+                        updateDebugInfo('camera-started');
+                        scanning = true;
+                        scanQR();
+                    } catch (playErr) {
+                        console.error('video.play() error:', playErr);
+                        lastCameraError = playErr;
+                        setCameraStatus('error', 'Could not start video');
+                        updateStatus('error', 'Failed to start video stream. Tap "Retry Camera" to retry.');
+                        document.getElementById('scanBtn').classList.remove('d-none');
+                        document.getElementById('startCameraBtn').classList.remove('d-none');
+                        updateDebugInfo();
+                        showNoCameraFallback();
+                    }
+                }, { once: true });
+
+            } catch (err) {
+                console.error('Camera access error:', err);
+                lastCameraError = err;
+                setCameraStatus('error', 'Camera unavailable');
+
+                let msg = 'Camera access denied. Please allow camera permissions and try again.';
+                if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    msg = 'No camera found on this device.';
+                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    msg = 'Camera permission denied. Please allow camera access in browser settings for localhost, then tap "Retry Camera".';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    msg = 'Camera is already in use by another application. Close it and tap "Retry Camera".';
+                } else if (err.name === 'OverconstrainedError') {
+                    msg = 'Camera constraints could not be satisfied. Tap "Retry Camera" to retry.';
+                }
+
+                const diagnosed = analyzePermissionIssue(err);
+                if (diagnosed) {
+                    msg = diagnosed;
+                }
+
+                updateStatus('error', msg);
+                document.getElementById('scanBtn').classList.remove('d-none');
+                document.getElementById('startCameraBtn').classList.remove('d-none');
+                updateDebugInfo();
+                showNoCameraFallback();
+            }
+        }
+
+        // ── Scan loop ─────────────────────────────────────────────────────────
+        let lastScanTime = 0;
+        function scanQR() {
+            if (!scanning) return;
+
+            const now = performance.now();
+            if (now - lastScanTime < 200) {
+                requestAnimationFrame(scanQR);
+                return;
+            }
+            lastScanTime = now;
+
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                // Full resolution — do NOT scale down; 50% scale breaks detection of small QR codes
+                canvas.width  = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: 'dontInvert'  // faster; try 'attemptBoth' if needed
+                });
+
+                if (code) {
+                    scanning = false;
+                    document.getElementById('scanning-overlay').classList.remove('d-none');
+                    updateStatus('success', 'QR Code detected! Processing…');
+                    processQRCode(code.data);
+                    return;
+                }
+            }
+
+            requestAnimationFrame(scanQR);
+        }
+
+        // ── QR result handler ────────────────────────────────────────────────
+        function processQRCode(qrData) {
+            const hospitalId = parseHospitalId(qrData);
+
+            if (hospitalId) {
+                // Stop stream to release camera before navigating
+                if (activeStream) activeStream.getTracks().forEach(t => t.stop());
+                setTimeout(() => {
+                    goToRegistration(hospitalId);
+                }, 700);
+            } else {
+                updateStatus('error', 'Invalid QR code. Please scan a valid hospital QR code.');
+                document.getElementById('scanning-overlay').classList.add('d-none');
+                scanning = true;
+                scanQR();
+            }
+        }
+
+        async function handleQRImageUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file || fileReaderBusy) return;
+
+            fileReaderBusy = true;
+            updateStatus('info', 'Reading image and decoding QR...');
+
+            try {
+                const imageUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const img = await new Promise((resolve, reject) => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                    image.src = imageUrl;
+                });
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: 'attemptBoth'
+                });
+
+                if (!code) {
+                    updateStatus('error', 'No QR code detected in the uploaded image. Try a clearer photo.');
+                    return;
+                }
+
+                const hospitalId = parseHospitalId(code.data);
+                if (!hospitalId) {
+                    updateStatus('error', 'QR detected, but it is not a valid hospital QR format.');
+                    return;
+                }
+
+                updateStatus('success', 'QR decoded from image. Redirecting...');
+                goToRegistration(hospitalId);
+            } catch (err) {
+                console.error('Image QR decode failed:', err);
+                updateStatus('error', 'Unable to read this image. Please try another QR photo.');
+            } finally {
+                fileReaderBusy = false;
+                event.target.value = '';
+            }
+        }
+
+        function handleManualHospitalId() {
+            const input = document.getElementById('manualHospitalId');
+            const hospitalId = String((input.value || '')).trim();
+            if (!/^\d+$/.test(hospitalId)) {
+                updateStatus('error', 'Please enter a valid numeric Hospital ID.');
+                return;
+            }
+            updateStatus('info', 'Verifying hospital and redirecting...');
+            goToRegistration(hospitalId);
+        }
+
+        // ── Scan button (retry initCamera, not just scanQR) ──────────────────
+        document.getElementById('startCameraBtn').addEventListener('click', () => {
+            initCamera();
+        });
+        document.getElementById('scanBtn').addEventListener('click', () => {
+            refreshCamera();
+        });
+        document.getElementById('jumpManualBtn').addEventListener('click', () => {
+            const input = document.getElementById('manualHospitalId');
+            document.getElementById('fallback-options').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.focus();
+        });
+        document.getElementById('uploadFallbackBtn').addEventListener('click', () => {
+            document.getElementById('fallback-options').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('qrImageInput').click();
+        });
+        document.getElementById('openSecureBtn').addEventListener('click', () => {
+            window.location.href = getSecureScannerUrl();
+        });
+        document.getElementById('openLocalhostBtn').addEventListener('click', () => {
+            window.location.href = getLocalhostScannerUrl();
+        });
+        document.getElementById('qrImageInput').addEventListener('change', handleQRImageUpload);
+        document.getElementById('manualGoBtn').addEventListener('click', handleManualHospitalId);
+        document.getElementById('manualHospitalId').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleManualHospitalId();
+            }
+        });
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.hostname === '127.0.0.1') {
+                const port = window.location.port ? `:${window.location.port}` : '';
+                const target = `${window.location.protocol}//localhost${port}${window.location.pathname}${window.location.search}${window.location.hash}`;
+                window.location.replace(target);
+                return;
+            }
+
+            updateStatus('info', 'Tap "Start Camera" to request camera permission.');
+            updateDebugInfo();
+            showSecureOpenButton(!window.isSecureContext);
+            syncPermissionBadge();
+
+            if (showUnsupportedEnvironmentMessage()) {
+                document.getElementById('startCameraBtn').classList.remove('d-none');
+            }
+        });
+
+        // Pause / resume on tab visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                scanning = false;
+            } else if (video.srcObject) {
+                scanning = true;
+                scanQR();
+            }
+        });
+
+        // Release camera on navigate away
+        window.addEventListener('beforeunload', () => {
+            if (activeStream) activeStream.getTracks().forEach(t => t.stop());
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tokens - E-Parchi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Modern Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="fas fa-arrow-left me-3 text-primary-custom fs-5"></i>
+                <span class="fw-bold">Back to Dashboard</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="bg-primary-custom text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <i class="fas fa-ticket-alt fa-3x text-secondary-custom mb-3"></i>
+                    <h1 class="display-6 fw-bold mb-2">My Queue Tokens</h1>
+                    <p class="mb-0">Track your hospital visit tokens and queue status</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tokens Section -->
+    <div class="container py-5">
+        {% if tokens %}
+        <!-- Active Tokens -->
+        <div class="mb-5">
+            <h3 class="fw-bold text-primary-custom mb-4">
+                <i class="fas fa-clock me-2"></i>Active Tokens
+            </h3>
+            <div class="row g-4">
+                {% for token in tokens %}
+                {% if token.status != 'completed' %}
+                <div class="col-lg-6">
+                    <div class="token-card" data-token-id="{{ token.id }}" onclick="trackToken(Number(this.dataset.tokenId))">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="bg-primary-custom text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 60px; height: 60px; font-size: 1.2rem;">
+                                    {{ token.token_number }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <h6 class="fw-bold mb-1">{{ token.hospital.name }}</h6>
+                                        <p class="text-muted small mb-1">
+                                            <i class="fas fa-user-md me-1"></i>Dr. {{ token.doctor.name }} • {{ token.doctor.department.name }}
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        {% if token.priority_level == 'EMERGENCY' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ambulance me-1"></i>EMERGENCY
+                                            </span>
+                                        {% elif token.priority_level == 'PRIORITY' %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-exclamation-circle me-1"></i>PRIORITY
+                                            </span>
+                                        {% elif token.status == 'waiting' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>Waiting
+                                            </span>
+                                        {% elif token.status == 'serving' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-user-check me-1"></i>Being Served
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-auto">
+                                        <small class="text-muted">
+                                            {{ token.created_time.strftime('%b %d, %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Completed Tokens -->
+        <div class="mb-5">
+            <h3 class="fw-bold text-primary-custom mb-4">
+                <i class="fas fa-check-circle me-2"></i>Visit History
+            </h3>
+            <div class="row g-4">
+                {% for token in tokens %}
+                {% if token.status == 'completed' %}
+                <div class="col-lg-6">
+                    <div class="token-card">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 60px; height: 60px; font-size: 1.2rem;">
+                                    {{ token.token_number }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <h6 class="fw-bold mb-1">{{ token.hospital.name }}</h6>
+                                        <p class="text-muted small mb-1">
+                                            <i class="fas fa-user-md me-1"></i>Dr. {{ token.doctor.name }} • {{ token.doctor.department.name }}
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-check me-1"></i>Completed
+                                        </span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <small class="text-muted">
+                                            {{ token.created_time.strftime('%b %d, %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-history text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 120px; height: 120px;">
+                <i class="fas fa-ticket-alt fa-3x text-muted"></i>
+            </div>
+            <h3 class="fw-bold text-muted mb-3">No Tokens Yet</h3>
+            <p class="text-muted mb-4">You haven't generated any queue tokens. Start by scanning a hospital QR code to get your first token.</p>
+            <a href="/scan_qr" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-qrcode me-2"></i>Scan Hospital QR
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Queue Tracking Modal -->
+    <div class="modal fade" id="trackModal" tabindex="-1" aria-labelledby="trackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-custom-lg">
+                <div class="modal-header bg-primary-custom text-white">
+                    <h5 class="modal-title fw-bold" id="trackModalLabel">
+                        <i class="fas fa-chart-line me-2"></i>Queue Tracking
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="track-content">
+                    <div class="text-center py-4">
+                        <div class="loading-spinner mb-3"></div>
+                        <p class="text-muted">Loading queue information...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="refreshQueue()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentTokenId = null;
+
+        function trackToken(tokenId) {
+            currentTokenId = tokenId;
+            const modal = new bootstrap.Modal(document.getElementById('trackModal'));
+            modal.show();
+            loadQueueStatus(tokenId);
+        }
+
+        async function loadQueueStatus(tokenId) {
+            try {
+                const response = await fetch(`/api/queue_status?token_id=${tokenId}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById('track-content').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.error}
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Calculate progress percentage
+                const totalPatients = data.patients_ahead + 1; // +1 for current patient
+                const progressPercent = totalPatients > 1 ? ((totalPatients - data.patients_ahead - 1) / (totalPatients - 1)) * 100 : 100;
+
+                document.getElementById('track-content').innerHTML = `
+                    <div class="row g-4">
+                        <!-- Current Status -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-custom">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <div class="bg-primary-custom text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3" style="width: 80px; height: 80px; font-size: 1.5rem;">
+                                            ${data.your_token}
+                                        </div>
+                                        <h4 class="fw-bold text-primary-custom">Your Token</h4>
+                                    </div>
+
+                                    <div class="progress mb-3" style="height: 12px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: ${progressPercent}%"
+                                             aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+
+                                    <div class="row text-center g-3">
+                                        <div class="col-4">
+                                            <div class="p-2">
+                                                <div class="fw-bold text-primary-custom fs-4">${data.patients_ahead}</div>
+                                                <small class="text-muted">Ahead of You</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2">
+                                                <div class="fw-bold text-success fs-4">${data.current_token}</div>
+                                                <small class="text-muted">Now Serving</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2">
+                                                <div class="fw-bold text-warning fs-4">${Math.ceil(data.est_wait_time)} min</div>
+                                                <small class="text-muted">Est. Wait</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Queue Visualization -->
+                        <div class="col-12">
+                            <h5 class="fw-bold text-primary-custom mb-3">
+                                <i class="fas fa-users me-2"></i>Queue Status
+                            </h5>
+                            <div class="card border-0 shadow-custom">
+                                <div class="card-body">
+                                    <div class="queue-visualization">
+                                        ${generateQueueVisualization(data)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="col-12">
+                            <div class="alert alert-info border-0">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-info-circle me-2"></i>What to expect:
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Your token will be called when it's your turn</li>
+                                    <li>Please wait in the designated waiting area</li>
+                                    <li>Estimated wait time may vary based on consultation duration</li>
+                                    <li>You will receive notifications when your status changes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('track-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Failed to load queue status. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        function generateQueueVisualization(data) {
+            let visualization = '<div class="d-flex flex-wrap gap-2 justify-content-center">';
+
+            // Add patients ahead
+            for (let i = 0; i < data.patients_ahead; i++) {
+                visualization += '<div class="bg-light border rounded p-2 text-center" style="width: 50px;"><small class="text-muted">Waiting</small></div>';
+            }
+
+            // Add current serving
+            if (data.current_token !== 'None') {
+                visualization += '<div class="bg-success text-white border rounded p-2 text-center" style="width: 50px;"><small>Now Serving</small></div>';
+            }
+
+            // Add current patient (you)
+            visualization += '<div class="bg-primary-custom text-white border rounded p-2 text-center fw-bold" style="width: 50px;"><small>You</small></div>';
+
+            visualization += '</div>';
+            return visualization;
+        }
+
+        function refreshQueue() {
+            if (currentTokenId) {
+                loadQueueStatus(currentTokenId);
+            }
+        }
+
+        // Auto-refresh every 30 seconds when modal is open
+        let refreshInterval;
+        document.getElementById('trackModal').addEventListener('show.bs.modal', function() {
+            refreshInterval = setInterval(() => {
+                if (currentTokenId && document.getElementById('trackModal').classList.contains('show')) {
+                    refreshQueue();
+                }
+            }, 30000);
+        });
+
+        document.getElementById('trackModal').addEventListener('hide.bs.modal', function() {
+            clearInterval(refreshInterval);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Generated - E-Parchi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Success Header -->
+    <section class="bg-success text-white py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <i class="fas fa-check-circle fa-4x mb-3"></i>
+                    <h1 class="display-6 fw-bold mb-2">Token Generated Successfully!</h1>
+                    <p class="mb-0">Your queue token has been created. Please save this information.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Token Details -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Token Card -->
+                <div class="card shadow-custom-lg border-0 mb-4">
+                    <div class="card-body p-5 text-center">
+                        <!-- Token Number Display -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <div class="bg-primary-custom rounded-circle d-flex align-items-center justify-content-center" style="width: 130px; height: 130px;">
+                                    <span class="text-white fw-bold fs-2">{{ token.token_number }}</span>
+                                </div>
+                            </div>
+                            <h2 class="fw-bold text-primary-custom mb-1 text-center">TOKEN NUMBER</h2>
+                            <p class="text-muted text-center">Use this number when called in the consultation room.</p>
+                        </div>
+
+                        <div class="row gy-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted small">Patients before you</div>
+                                    <div class="fs-3 fw-bold text-dark">{{ patients_ahead }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted small">Estimated waiting time</div>
+                                    <div class="fs-3 fw-bold text-success">{{ estimated_wait }} min</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted small">Queue position</div>
+                                    <div class="fs-3 fw-bold text-primary">{{ token.position or 1 }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted small">AI Severity Score</div>
+                                    <div class="fs-3 fw-bold {% if emergency_flag %}text-danger{% elif severity_score >= 60 %}text-warning{% else %}text-primary{% endif %}">{{ severity_score }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Queue Progress</small>
+                                <small class="text-muted fw-semibold">{{ queue_progress or 35 }}%</small>
+                            </div>
+                            <div class="progress" style="height: 14px; border-radius: 10px;">
+                                <div class="progress-bar bg-primary queue-progress-bar" role="progressbar" data-progress="{{ queue_progress or 35 }}" style="border-radius: 10px;" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        <!-- Token Details Grid -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="bg-light rounded p-3 h-100">
+                                    <i class="fas fa-hospital text-primary-custom mb-2 fa-2x"></i>
+                                    <h6 class="fw-bold mb-1">Hospital</h6>
+                                    <p class="text-muted mb-0">{{ hospital.name }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-light rounded p-3 h-100">
+                                    <i class="fas fa-clinic-medical text-primary-custom mb-2 fa-2x"></i>
+                                    <h6 class="fw-bold mb-1">Department</h6>
+                                    <p class="text-muted mb-0">{{ department.name }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-light rounded p-3 h-100">
+                                    <i class="fas fa-user-md text-primary-custom mb-2 fa-2x"></i>
+                                    <h6 class="fw-bold mb-1">Doctor</h6>
+                                    <p class="text-muted mb-0">Dr. {{ doctor.name }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-light rounded p-3 h-100">
+                                    <i class="fas fa-clock text-primary-custom mb-2 fa-2x"></i>
+                                    <h6 class="fw-bold mb-1">Estimated Wait Time</h6>
+                                    <p class="text-muted mb-0">{{ estimated_wait }} minutes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if emergency_flag %}
+                        <div class="alert alert-danger border-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-ambulance fa-2x text-danger"></i>
+                                </div>
+                                <div class="col text-start">
+                                    <h6 class="fw-bold mb-1">Emergency Override Activated</h6>
+                                    <p class="mb-0">{{ triage_note }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info border-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-info-circle fa-2x text-info"></i>
+                                </div>
+                                <div class="col text-start">
+                                    <h6 class="fw-bold mb-1">Queue Information</h6>
+                                    <p class="mb-1">You are patient #{{ patients_ahead + 1 }} in the smart queue.</p>
+                                    <p class="mb-0 small">{{ triage_note }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                            <a href="{{ url_for('patient.tokens') }}" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-ticket-alt me-2"></i>View My Tokens
+                            </a>
+                            <a href="/" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="fas fa-home me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions Card -->
+                <div class="card shadow-custom border-0">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-primary-custom mb-3">
+                            <i class="fas fa-list-check me-2"></i>What happens next?
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="bg-primary-custom text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 30px; height: 30px;">
+                                        <span class="fw-bold">1</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Wait for your turn</h6>
+                                        <p class="text-muted small mb-0">Monitor your token status in real-time</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="bg-primary-custom text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 30px; height: 30px;">
+                                        <span class="fw-bold">2</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Token will be called</h6>
+                                        <p class="text-muted small mb-0">Listen for your token number announcement</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 30px; height: 30px;">
+                                        <span class="fw-bold">3</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Proceed to doctor</h6>
+                                        <p class="text-muted small mb-0">Go to the designated consultation room</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 30px; height: 30px;">
+                                        <span class="fw-bold">4</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Complete consultation</h6>
+                                        <p class="text-muted small mb-0">Your visit will be recorded in medical history</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Notice -->
+                <div class="alert alert-warning border-0 mt-4">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning me-3 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Emergency Cases</h6>
+                            <p class="mb-1">If you have a medical emergency, please inform the hospital staff immediately. Emergency cases are prioritized and handled separately from the regular queue system.</p>
+                            <button class="btn btn-warning btn-sm" onclick="emergencyAlert()">
+                                <i class="fas fa-ambulance me-1"></i>Report Emergency
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const progressBar = document.querySelector('.queue-progress-bar');
+        if (progressBar) {
+            const progress = Number(progressBar.dataset.progress) || 0;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+        }
+
+        function emergencyAlert() {
+            if (confirm('Are you experiencing a medical emergency? This will alert hospital staff immediately.')) {
+                // In a real implementation, this would send an alert to hospital staff
+                alert('Emergency alert sent to hospital staff. Help is on the way.');
+            }
+        }
+
+        // Auto-refresh queue status every 30 seconds
+        setInterval(function() {
+            // Could add live queue updates here
+            console.log('Checking queue status...');
+        }, 30000);
+    </script>
+</body>
+</html>
