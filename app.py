@@ -161,6 +161,13 @@ if __name__ == '__main__':
 
     if use_https:
         ssl_port = int(os.getenv('HTTPS_PORT', '5443'))
-        socketio.run(app, debug=debug, host=host, port=ssl_port, ssl_context='adhoc')
+        socketio.run(
+            app,
+            debug=debug,
+            host=host,
+            port=ssl_port,
+            ssl_context='adhoc',
+            allow_unsafe_werkzeug=True,
+        )
     else:
-        socketio.run(app, debug=debug, host=host, port=port)
+        socketio.run(app, debug=debug, host=host, port=port, allow_unsafe_werkzeug=True)
